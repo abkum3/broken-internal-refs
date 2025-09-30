@@ -1,0 +1,103 @@
+openapi: 3.0.0
+info:
+  title: Test API with Broken Internal Refs
+  description: This OpenAPI spec has intentionally broken internal references to test the resolver
+  version: 1.0.0
+  contact:
+    name: Test Contact
+    url: https://example.com
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+servers:
+  - url: https://api.example.com/v1
+    description: Production server
+paths:
+  /users:
+    get:
+      summary: List users
+      description: Get a list of users
+      operationId: listUsers
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                # This reference is broken - the schema doesn't exist
+                $ref: '#/components/schemas/NonExistentUserList'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /users/{id}:
+    get:
+      summary: Get user by ID
+      description: Get a specific user by their ID
+      operationId: getUserById
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                # This reference is also broken
+                $ref: '#/components/schemas/NonExistentUser'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Error:
+      type: object
+      required:
+        - ErrorMessage
+        - ErrorIdentifier
+      properties:
+        ErrorMessage:
+          type: string
+          description: A human-readable error message
+        ErrorIdentifier:
+          type: string
+          description: An identifier to help with troubleshooting
+    # Note: The referenced schemas NonExistentUserList and NonExistentUser are missing
+    # This should trigger the broken ref resolver

@@ -19,6 +19,8 @@
 import { oas } from '@stoplight/spectral-rulesets';
 import { oas3_1 } from '@stoplight/spectral-formats';
 import defaultInEnum from './functions/defaultInEnum.js';
+import brokenRefResolver from './functions/brokenRefResolver.js';
+
 export default {
   'extends': [
     [
@@ -42,6 +44,17 @@ export default {
       'then': [
         {
           'function': defaultInEnum,
+        },
+      ],
+    },
+    'validate-internal-refs': {
+      'description': 'Internal $ref references should point to existing schema components',
+      'message': '{{description}}; {{error}}',
+      'severity': 'error',
+      'given': '$..$ref',
+      'then': [
+        {
+          'function': brokenRefResolver,
         },
       ],
     },
